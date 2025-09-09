@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
-/** --- Utils SEO --- */
-function upsertMeta(selector: string, attrs: Record<string, string>) {
-  let el = document.querySelector<HTMLMetaElement>(selector);
+/** --- Utils SEO (JS puro) --- */
+function upsertMeta(selector, attrs) {
+  let el = document.querySelector(selector);
   if (!el) {
     el = document.createElement("meta");
     document.head.appendChild(el);
   }
-  Object.entries(attrs).forEach(([k, v]) => el!.setAttribute(k, v));
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
 }
-function setSEO({ title, description, url }: { title: string; description: string; url?: string }) {
+function setSEO({ title, description, url }) {
   document.title = title;
   upsertMeta('meta[name="description"]', { name: "description", content: description });
   upsertMeta('meta[property="og:title"]', { property: "og:title", content: title });
@@ -20,8 +20,8 @@ function setSEO({ title, description, url }: { title: string; description: strin
 }
 
 /** --- JSON-LD (schema.org) --- */
-function injectJSONLD(payload: object, id = "rb-jsonld") {
-  let tag = document.getElementById(id) as HTMLScriptElement | null;
+function injectJSONLD(payload, id = "rb-jsonld") {
+  let tag = document.getElementById(id);
   if (!tag) {
     tag = document.createElement("script");
     tag.type = "application/ld+json";
@@ -31,19 +31,18 @@ function injectJSONLD(payload: object, id = "rb-jsonld") {
   tag.textContent = JSON.stringify(payload);
 }
 
-/** --- Env email (Vite/Next) --- */
+/** --- Email desde ENV (Vite) --- */
 const CONTACT_EMAIL =
-  (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_CONTACT_EMAIL) ||
-  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_CONTACT_EMAIL) ||
+  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_CONTACT_EMAIL) ||
   "info@rbgroupsolutions.com";
 
-const App: React.FC = () => {
+const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [language, setLanguage] = useState<"es" | "en">(
-    (localStorage.getItem("rb_lang") as "es" | "en") || "es"
+  const [language, setLanguage] = useState(
+    (typeof window !== "undefined" && localStorage.getItem("rb_lang")) || "es"
   );
-  const headerRef = useRef<HTMLElement>(null);
+  const headerRef = useRef(null);
 
   // Scroll state
   useEffect(() => {
@@ -55,7 +54,7 @@ const App: React.FC = () => {
 
   // Persist language + SEO + JSON-LD
   useEffect(() => {
-    localStorage.setItem("rb_lang", language);
+    try { localStorage.setItem("rb_lang", language); } catch {}
     const title = "RB Field Pro 360 | RB Group Solutions LLC";
     const desc =
       language === "en"
@@ -80,12 +79,12 @@ const App: React.FC = () => {
 
   // Smooth scroll con offset del header fijo
   useEffect(() => {
-    const handler = (e: Event) => {
-      const a = e.target as HTMLAnchorElement;
-      if (a.tagName !== "A") return;
+    const handler = (e) => {
+      const a = e.target;
+      if (!a || a.tagName !== "A") return;
       const href = a.getAttribute("href");
       if (!href || !href.startsWith("#")) return;
-      const el = document.querySelector(href) as HTMLElement | null;
+      const el = document.querySelector(href);
       if (!el) return;
       e.preventDefault();
       const headerH = headerRef.current?.offsetHeight ?? 0;
@@ -220,7 +219,7 @@ const App: React.FC = () => {
       },
       citiesLine: "Norridge / Chicago, Illinois, USA",
     },
-  } as const)[language], [language]);
+  })[language], [language]);
 
   const NAV = [
     { id: "home", label: t.menu.home },
@@ -236,7 +235,7 @@ const App: React.FC = () => {
     snaplog: "https://sl360.rbgroupsolutions.com",
     fueltrack: "https://gas360.rbgroupsolutions.com",
     field360: "https://field360.rbgroupsolutions.com",
-  } as const;
+  };
 
   const modules = [
     { id: "snaplog", icon: "📦", title: t.systems.snaplogTitle, desc: t.systems.snaplogDesc, color: "from-blue-500 to-cyan-500", url: urls.snaplog },
@@ -421,7 +420,7 @@ const App: React.FC = () => {
                   <h3 className="text-2xl font-bold mb-2">{p.name}</h3>
                   <div className="text-3xl font-extrabold text-blue-600 mb-4">{p.price}</div>
                   <ul className="space-y-2 text-gray-600 mb-6">
-                    {p.items.map((it: string, i: number) => <li key={i}>• {it}</li>)}
+                    {p.items.map((it, i) => <li key={i}>• {it}</li>)}
                   </ul>
                   <a href="#contact" className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold text-center block">
                     {p.cta}
@@ -474,7 +473,7 @@ const App: React.FC = () => {
                 </div>
                 <select className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" defaultValue="">
                   <option value="">{t.contact.form.system}</option>
-                  {t.contact.options.map((opt: string) => <option key={opt} value={opt.toLowerCase()}>{opt}</option>)}
+                  {t.contact.options.map((opt) => <option key={opt} value={opt.toLowerCase()}>{opt}</option>)}
                 </select>
                 <textarea rows={4} placeholder={t.contact.form.message}
                           className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
