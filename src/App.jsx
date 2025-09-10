@@ -602,7 +602,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* Módulos */}
+        {/* Módulos (tarjetas con botón) */}
         <section id="systems" className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -632,11 +632,11 @@ export default function App() {
               ))}
             </div>
 
-            {/* Detalles + botón */}
+            {/* Detalles (SIN botón) */}
             <div id="snaplog" className="mt-16 p-8 bg-white rounded-2xl border">
               <h3 className="text-2xl font-bold mb-2">RB SnapLog 360</h3>
               <p className="text-gray-600 mb-4">{t.systems.snaplogDesc}</p>
-              <ul className="list-disc pl-6 space-y-2 text-gray-600 mb-6">
+              <ul className="list-disc pl-6 space-y-2 text-gray-600">
                 {(language === "en"
                   ? [
                       "One-tap proof: photo + GPS + timestamp.",
@@ -653,20 +653,12 @@ export default function App() {
                       "Interfaz bilingüe (ES/EN).",
                     ]).map((txt, i) => <li key={i}>{txt}</li>)}
               </ul>
-              <a
-                href={urls.snaplog}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:shadow-lg"
-              >
-                {language === "en" ? "Open app" : "Abrir app"}
-              </a>
             </div>
 
             <div id="fueltrack" className="mt-8 p-8 bg-white rounded-2xl border">
               <h3 className="text-2xl font-bold mb-2">RB FuelTrack 360</h3>
               <p className="text-gray-600 mb-4">{t.systems.fuelDesc}</p>
-              <ul className="list-disc pl-6 space-y-2 text-gray-600 mb-6">
+              <ul className="list-disc pl-6 space-y-2 text-gray-600">
                 {(language === "en"
                   ? [
                       "Receipt OCR and receiptless validation (odometer / pump / GPS).",
@@ -681,20 +673,12 @@ export default function App() {
                       "UX pensada para el conductor: captura rápida en movimiento.",
                     ]).map((txt, i) => <li key={i}>{txt}</li>)}
               </ul>
-              <a
-                href={urls.fueltrack}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-amber-600 text-white font-semibold hover:shadow-lg"
-              >
-                {language === "en" ? "Open app" : "Abrir app"}
-              </a>
             </div>
 
             <div id="field360" className="mt-8 p-8 bg-white rounded-2xl border">
               <h3 className="text-2xl font-bold mb-2">RB Field360 — {language === "en" ? "Flagship" : "Joya de la corona"}</h3>
               <p className="text-gray-600 mb-4">{t.systems.fieldDesc}</p>
-              <ul className="list-disc pl-6 space-y-2 text-gray-600 mb-6">
+              <ul className="list-disc pl-6 space-y-2 text-gray-600">
                 {(language === "en"
                   ? [
                       "Daily records, productivity metrics and payroll.",
@@ -711,14 +695,6 @@ export default function App() {
                       "Tableros ejecutivos y analítica avanzada.",
                     ]).map((txt, i) => <li key={i}>{txt}</li>)}
               </ul>
-              <a
-                href={urls.field360}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-purple-700 text-white font-semibold hover:shadow-lg"
-              >
-                {language === "en" ? "Open app" : "Abrir app"}
-              </a>
             </div>
           </div>
         </section>
