@@ -1,7 +1,279 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
-/** SEO simple (JS puro) */
+/* =========================================================
+   COMPONENTES INLINE (sin librerías externas)
+   ========================================================= */
+
+/** Fondo animado tipo constelaciones (canvas) */
+function TechBG() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    const ctx = canvas.getContext("2d", { alpha: true });
+    let w, h, dpr, rafId;
+    const DPR = () => (window.devicePixelRatio || 1);
+
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const particles = [];
+    const MAX = 80;
+
+    function resize() {
+      dpr = DPR();
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    const mouse = { x: -9999, y: -9999 };
+
+    function init() {
+      particles.length = 0;
+      for (let i = 0; i < MAX; i++) {
+        particles.push({
+          x: rand(0, w),
+          y: rand(0, h),
+          vx: rand(-0.5, 0.5),
+          vy: rand(-0.5, 0.5),
+        });
+      }
+    }
+
+    function hue(t) {
+      return 210 + 60 * Math.sin(t * 0.0003); // azules → púrpuras
+    }
+
+    function step(t) {
+      ctx.clearRect(0, 0, w, h);
+
+      // puntos
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 140) {
+          p.x += dx * 0.003;
+          p.y += dy * 0.003;
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue(t)}, 90%, 60%, .9)`;
+        ctx.fill();
+      }
+
+      // líneas
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d = dx * dx + dy * dy;
+          if (d < 120 * 120) {
+            const alpha = 1 - d / (120 * 120);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `hsla(${hue(t)}, 100%, 70%, ${alpha * 0.3})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      rafId = requestAnimationFrame(step);
+    }
+
+    function onMouse(e) {
+      const r = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - r.left;
+      mouse.y = e.clientY - r.top;
+    }
+
+    function onResize() { resize(); init(); }
+
+    resize(); init(); rafId = requestAnimationFrame(step);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("mousemove", onMouse, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("mousemove", onMouse);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={ref}
+      className="fixed inset-0 -z-10 h-screen w-screen pointer-events-none"
+      aria-hidden
+    />
+  );
+}
+
+/** Efecto tilt 3D + spotlight en tarjetas */
+function Tilt({ children, className = "" }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    let frame;
+    const max = 10; // grados
+
+    function onMove(e) {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const rx = (py - 0.5) * -2 * max;
+      const ry = (px - 0.5) * 2 * max;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+        el.style.setProperty("--mx", `${px * 100}%`);
+        el.style.setProperty("--my", `${py * 100}%`);
+      });
+    }
+    function reset() {
+      el.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg)";
+    }
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", reset);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", reset);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`relative transition-transform duration-200 will-change-transform ${className}`}
+      style={{
+        background:
+          "radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.08), transparent 40%)",
+        borderRadius: "1rem",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** KPIs animados */
+function useCount(to = 0, ms = 1200) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    let start, raf;
+    function step(t) {
+      if (!start) start = t;
+      const p = Math.min((t - start) / ms, 1);
+      setN(Math.floor(to * (0.5 - Math.cos(Math.PI * p) / 2))); // easeInOut
+      if (p < 1) raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, ms]);
+  return n;
+}
+function StatsBar() {
+  const deliveries = useCount(120000);
+  const uptime = useCount(99);
+  const countries = useCount(6);
+
+  return (
+    <div className="mt-10 grid grid-cols-3 gap-6 max-w-3xl mx-auto">
+      <div className="rounded-xl bg-white/70 backdrop-blur p-4 border border-slate-200 text-center">
+        <div className="text-3xl font-extrabold text-slate-900">{deliveries.toLocaleString()}+</div>
+        <div className="text-xs uppercase tracking-wider text-slate-500">Registros capturados</div>
+      </div>
+      <div className="rounded-xl bg-white/70 backdrop-blur p-4 border border-slate-200 text-center">
+        <div className="text-3xl font-extrabold text-slate-900">{uptime}.9%</div>
+        <div className="text-xs uppercase tracking-wider text-slate-500">Disponibilidad plataforma</div>
+      </div>
+      <div className="rounded-xl bg-white/70 backdrop-blur p-4 border border-slate-200 text-center">
+        <div className="text-3xl font-extrabold text-slate-900">{countries}</div>
+        <div className="text-xs uppercase tracking-wider text-slate-500">Países operando</div>
+      </div>
+    </div>
+  );
+}
+
+/** Paleta de comandos (⌘K / Ctrl+K) para abrir módulos */
+function CommandK({ links }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const list = useMemo(() => {
+    const t = (q || "").toLowerCase();
+    return links.filter(l => l.label.toLowerCase().includes(t));
+  }, [links, q]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setOpen(v => !v);
+      }
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center p-4">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200">
+          <input
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar… (apps, módulos)"
+            className="w-full outline-none text-slate-800 placeholder-slate-400"
+          />
+        </div>
+        <ul className="max-h-72 overflow-auto">
+          {list.map((l, i) => (
+            <li key={i} className="border-b last:border-0 border-slate-100">
+              <a
+                href={l.href}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"
+                onClick={() => setOpen(false)}
+              >
+                <span className="text-xl">{l.icon}</span>
+                <div>
+                  <div className="font-semibold text-slate-900">{l.label}</div>
+                  <div className="text-xs text-slate-500">{l.desc}</div>
+                </div>
+              </a>
+            </li>
+          ))}
+          {!list.length && (
+            <li className="px-4 py-6 text-center text-slate-400 text-sm">Sin resultados</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+/** SEO simple */
 function setMeta(name, content) {
   let tag = document.querySelector(`meta[name="${name}"]`);
   if (!tag) {
@@ -20,7 +292,7 @@ export default function App() {
   );
   const headerRef = useRef(null);
 
-  // Header shadow al hacer scroll
+  // Header shadow
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -212,6 +484,16 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <style>{`html { scroll-behavior: smooth }`}</style>
 
+      {/* Innovación */}
+      <TechBG />
+      <CommandK
+        links={[
+          { label: "RB SnapLog 360", href: urls.snaplog, icon: "📦", desc: language==="en"?"One-tap POD with photo+GPS":"POD en un toque con foto+GPS" },
+          { label: "RB FuelTrack 360", href: urls.fueltrack, icon: "⛽", desc: language==="en"?"Fuel audit & route control":"Auditoría de combustible y rutas" },
+          { label: "RB Field360", href: urls.field360, icon: "📊", desc: language==="en"?"Operations hub (flagship)":"Hub operativo (joya de la corona)" },
+        ]}
+      />
+
       {/* Toggle idioma */}
       <div className="fixed top-4 right-4 z-50">
         <div className="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-lg">
@@ -292,6 +574,13 @@ export default function App() {
                 {t.hero.cta2}
               </a>
             </div>
+
+            {/* KPIs + pista de Command Palette */}
+            <StatsBar />
+            <p className="mt-3 text-xs text-slate-400">
+              {language==="en" ? "Tip: open quick switcher with " : "Consejo: abre el conmutador rápido con "}
+              <kbd className="px-1 py-0.5 rounded bg-slate-200">⌘K</kbd> / <kbd className="px-1 py-0.5 rounded bg-slate-200">Ctrl+K</kbd>.
+            </p>
           </div>
         </section>
 
@@ -323,7 +612,7 @@ export default function App() {
 
             <div className="grid md:grid-cols-3 gap-8">
               {modules.map(m => (
-                <div key={m.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 border overflow-hidden">
+                <Tilt key={m.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition border overflow-hidden">
                   <div className={`bg-gradient-to-r ${m.color} p-6 text-white`}>
                     <div className="text-4xl mb-4">{m.icon}</div>
                     <h3 className="text-2xl font-bold">{m.title}</h3>
@@ -339,7 +628,7 @@ export default function App() {
                       {t.systems.view}
                     </a>
                   </div>
-                </div>
+                </Tilt>
               ))}
             </div>
 
