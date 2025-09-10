@@ -1,42 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
-/** --- Utils SEO (JS puro) --- */
-function upsertMeta(selector, attrs) {
-  let el = document.querySelector(selector);
-  if (!el) {
-    el = document.createElement("meta");
-    document.head.appendChild(el);
-  }
-  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-}
-function setSEO({ title, description, url }) {
-  document.title = title;
-  upsertMeta('meta[name="description"]', { name: "description", content: description });
-  upsertMeta('meta[property="og:title"]', { property: "og:title", content: title });
-  upsertMeta('meta[property="og:description"]', { property: "og:description", content: description });
-  upsertMeta('meta[property="og:type"]', { property: "og:type", content: "website" });
-  if (url) upsertMeta('meta[property="og:url"]', { property: "og:url", content: url });
-}
-
-/** --- JSON-LD (schema.org) --- */
-function injectJSONLD(payload, id = "rb-jsonld") {
-  let tag = document.getElementById(id);
+/** SEO simple (JS puro) */
+function setMeta(name, content) {
+  let tag = document.querySelector(`meta[name="${name}"]`);
   if (!tag) {
-    tag = document.createElement("script");
-    tag.type = "application/ld+json";
-    tag.id = id;
+    tag = document.createElement("meta");
+    tag.setAttribute("name", name);
     document.head.appendChild(tag);
   }
-  tag.textContent = JSON.stringify(payload);
+  tag.setAttribute("content", content);
 }
 
-/** --- Email desde ENV (Vite) --- */
-const CONTACT_EMAIL =
-  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_CONTACT_EMAIL) ||
-  "info@rbgroupsolutions.com";
-
-const App = () => {
+export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [language, setLanguage] = useState(
@@ -44,7 +20,7 @@ const App = () => {
   );
   const headerRef = useRef(null);
 
-  // Scroll state
+  // Header shadow al hacer scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -52,7 +28,7 @@ const App = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Persist language + SEO + JSON-LD
+  // Persist idioma + meta description
   useEffect(() => {
     try { localStorage.setItem("rb_lang", language); } catch {}
     const title = "RB Field Pro 360 | RB Group Solutions LLC";
@@ -60,24 +36,11 @@ const App = () => {
       language === "en"
         ? "One platform. Three modules. Real-time operations for drivers, deliveries and field management."
         : "Una plataforma. Tres módulos. Operaciones en tiempo real para drivers, entregas y gestión de campo.";
-    setSEO({ title, description: desc, url: window.location.href });
-
-    injectJSONLD({
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: "RB Group Solutions LLC",
-      url: window.location.origin,
-      sameAs: ["mailto:" + CONTACT_EMAIL],
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "Norridge / Chicago",
-        addressRegion: "IL",
-        addressCountry: "US",
-      },
-    });
+    document.title = title;
+    setMeta("description", desc);
   }, [language]);
 
-  // Smooth scroll con offset del header fijo
+  // Scroll suave con offset del header
   useEffect(() => {
     const handler = (e) => {
       const a = e.target;
@@ -145,7 +108,7 @@ const App = () => {
         items: [
           { q: "Can I start with one module and add more later?", a: "Yes, all modules share branding and data model." },
           { q: "Do drivers need separate logins?", a: "Keep light apps per role now; move to SSO later if you want." },
-          { q: "Where is data stored?", a: "On a dedicated database exclusively for your company, with role-based security. Exports to Sheets, Excel and PDF are available." },
+          { q: "Where is data stored?", a: "On a dedicated database exclusively for your company, with role-based security." },
           { q: "Custom features?", a: "Yes. We tailor workflows, reports and permissions." },
         ],
       },
@@ -206,7 +169,7 @@ const App = () => {
         items: [
           { q: "¿Puedo empezar con un módulo y agregar más?", a: "Sí. Comparten branding y modelo de datos." },
           { q: "¿Necesitan varios logins los drivers?", a: "Puedes mantener apps por rol ahora y pasar a SSO luego." },
-          { q: "¿Dónde se guardan los datos?", a: "En una base de datos dedicada para tu empresa, con seguridad por roles. También ofrecemos exportaciones a Sheets, Excel y PDF." },
+          { q: "¿Dónde se guardan los datos?", a: "En una base de datos dedicada para tu empresa, con seguridad por roles." },
           { q: "¿Hacen personalizaciones?", a: "Sí. Ajustamos flujos, reportes y permisos a tu operación." },
         ],
       },
@@ -219,7 +182,7 @@ const App = () => {
       },
       citiesLine: "Norridge / Chicago, Illinois, USA",
     },
-  }), [language]);
+  })[language], [language]);
 
   const NAV = [
     { id: "home", label: t.menu.home },
@@ -230,7 +193,7 @@ const App = () => {
     { id: "contact", label: t.menu.contact },
   ];
 
-  // URLs reales de las apps
+  // URLs de las apps
   const urls = {
     snaplog: "https://sl360.rbgroupsolutions.com",
     fueltrack: "https://gas360.rbgroupsolutions.com",
@@ -255,12 +218,10 @@ const App = () => {
           <button
             onClick={() => setLanguage("en")}
             className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${language==="en"?"bg-blue-600 text-white":"text-gray-700 hover:text-blue-600"}`}
-            aria-pressed={language === "en"}
           >EN</button>
           <button
             onClick={() => setLanguage("es")}
             className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${language==="es"?"bg-blue-600 text-white":"text-gray-700 hover:text-blue-600"}`}
-            aria-pressed={language === "es"}
           >ES</button>
         </div>
       </div>
@@ -382,7 +343,7 @@ const App = () => {
               ))}
             </div>
 
-            {/* Detalles rápidos con botón */}
+            {/* Detalles + botón */}
             <div id="snaplog" className="mt-16 p-8 bg-white rounded-2xl border">
               <h3 className="text-2xl font-bold mb-2">RB SnapLog 360</h3>
               <p className="text-gray-600 mb-4">{t.systems.snaplogDesc}</p>
@@ -401,8 +362,7 @@ const App = () => {
                       "Offline-first con sincronización en segundo plano; los registros no se pierden.",
                       "Interacción mínima: solo nombre del operario.",
                       "Interfaz bilingüe (ES/EN).",
-                    ]
-                ).map((txt, i) => <li key={i}>{txt}</li>)}
+                    ]).map((txt, i) => <li key={i}>{txt}</li>)}
               </ul>
               <a
                 href={urls.snaplog}
@@ -430,8 +390,7 @@ const App = () => {
                       "Cálculo de costo por unidad y vista de ruta.",
                       "Alertas de excepción y traza de auditoría.",
                       "UX pensada para el conductor: captura rápida en movimiento.",
-                    ]
-                ).map((txt, i) => <li key={i}>{txt}</li>)}
+                    ]).map((txt, i) => <li key={i}>{txt}</li>)}
               </ul>
               <a
                 href={urls.fueltrack}
@@ -461,8 +420,7 @@ const App = () => {
                       "Gestión de flota y mantenimiento preventivo.",
                       "Permisos por rol y acciones auditables.",
                       "Tableros ejecutivos y analítica avanzada.",
-                    ]
-                ).map((txt, i) => <li key={i}>{txt}</li>)}
+                    ]).map((txt, i) => <li key={i}>{txt}</li>)}
               </ul>
               <a
                 href={urls.field360}
@@ -554,8 +512,8 @@ const App = () => {
 
             <p className="text-gray-400">
               {t.contact.direct}{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-400 hover:text-blue-300">
-                {CONTACT_EMAIL}
+              <a href="mailto:info@rbgroupsolutions.com" className="text-blue-400 hover:text-blue-300">
+                info@rbgroupsolutions.com
               </a>
             </p>
           </div>
@@ -593,7 +551,7 @@ const App = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4">{language==="en"?"Contact":"Contacto"}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>📧 {CONTACT_EMAIL}</li>
+                <li>📧 info@rbgroupsolutions.com</li>
                 <li>📞 +1 (773) 263-7256</li>
                 <li>📍 Norridge / Chicago, IL</li>
               </ul>
@@ -607,6 +565,4 @@ const App = () => {
       </footer>
     </div>
   );
-};
-
-export default App;
+}
