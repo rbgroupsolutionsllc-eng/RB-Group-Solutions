@@ -269,6 +269,131 @@ function CommandK({ links }) {
   );
 }
 
+/** Reviews / Opiniones (Tilt + animación) */
+function ReviewsSection({ language }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  function Stars({ n = 5 }) {
+    return (
+      <div className="flex gap-1" aria-label={`${n} / 5`}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <svg
+            key={i}
+            viewBox="0 0 24 24"
+            className={`w-5 h-5 ${i < n ? "text-yellow-500" : "text-slate-300"}`}
+            fill={i < n ? "currentColor" : "none"}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.2"
+              d="M11.48 3.5l2.09 4.23c.14.28.41.47.72.52l4.67.68c.79.12 1.11 1.09.54 1.65l-3.38 3.29c-.22.21-.32.52-.27.82l.8 4.66c.14.79-.69 1.39-1.4 1.02l-4.19-2.2a.93.93 0 00-.86 0l-4.19 2.2c-.71.37-1.54-.23-1.4-1.02l.8-4.66a1 1 0 00-.27-.82L2.5 10.58c-.57-.56-.25-1.53.54-1.65l4.67-.68c.31-.05.58-.24.72-.52L10.52 3.5a.9.9 0 011.0 0z"
+            />
+          </svg>
+        ))}
+      </div>
+    );
+  }
+
+  const REVIEWS = [
+    {
+      name: "Laura M.",
+      role: language === "en" ? "Operations Manager" : "Gerente de Operaciones",
+      company: "Last-mile Logistics",
+      rating: 5,
+      text: language === "en"
+        ? "With SnapLog, POD happens in one tap. Fewer errors, faster invoicing—our drivers love the simplicity."
+        : "Con SnapLog, el POD ocurre en un toque. Menos errores, facturación más rápida—los conductores aman la simplicidad.",
+    },
+    {
+      name: "Andrés R.",
+      role: language === "en" ? "Fleet & Maintenance Lead" : "Líder de Flota y Mantenimiento",
+      company: "Field Service",
+      rating: 5,
+      text: language === "en"
+        ? "FuelTrack’s audit flow (odometer/pump/GPS) gave us full control of fuel costs without extra workload."
+        : "El flujo de auditoría de FuelTrack (odómetro/bomba/GPS) nos dio control total del combustible sin carga extra.",
+    },
+    {
+      name: "Sofía P.",
+      role: language === "en" ? "Warehouse & Payroll" : "Almacén y Nómina",
+      company: "Retail Distribution",
+      rating: 5,
+      text: language === "en"
+        ? "Field360 became our operations hub: daily records, productivity and payroll in one place."
+        : "Field360 se volvió nuestro hub: registros diarios, productividad y nómina en un solo lugar.",
+    },
+    {
+      name: "Diego C.",
+      role: "Country Manager",
+      company: "3PL",
+      rating: 5,
+      text: language === "en"
+        ? "The suite feels cohesive. Role-based apps are lightweight and the dashboards are executive-grade."
+        : "La suite es coherente. Las apps por rol son ligeras y los tableros tienen calidad ejecutiva.",
+    },
+    {
+      name: "María J.",
+      role: language === "en" ? "Dispatch Supervisor" : "Supervisora de Despacho",
+      company: "Cold-chain",
+      rating: 4,
+      text: language === "en"
+        ? "Offline-first design is key for our routes with low coverage. Sync is automatic—no lost data."
+        : "El diseño offline-first es clave en rutas con poca cobertura. La sincronización es automática—no se pierde data.",
+    },
+    {
+      name: "Kevin T.",
+      role: language === "en" ? "Finance Controller" : "Controller Financiero",
+      company: "Manufacturing",
+      rating: 5,
+      text: language === "en"
+        ? "Exception alerts and traceability improved our controls without slowing the teams."
+        : "Las alertas de excepción y la trazabilidad mejoraron el control sin frenar a los equipos.",
+    },
+  ];
+
+  return (
+    <section id="reviews" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl font-bold text-gray-800 mb-3">
+            {language === "en" ? "What teams say" : "Lo que dicen los equipos"}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {language === "en"
+              ? "Real feedback from operations, logistics and field service leaders."
+              : "Comentarios reales de líderes de operaciones, logística y servicio en campo."}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {REVIEWS.map((r, i) => (
+            <Tilt key={i} className="border border-slate-200 bg-white rounded-2xl shadow-sm hover:shadow-md transition">
+              <div
+                className={`p-6 transform transition-all duration-500 ${
+                  mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                }`}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-slate-900">{r.name}</div>
+                    <div className="text-sm text-slate-500">{r.role} · {r.company}</div>
+                  </div>
+                  <Stars n={r.rating} />
+                </div>
+                <p className="text-slate-700 leading-relaxed">{r.text}</p>
+              </div>
+            </Tilt>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* =========================================================
    APP
    ========================================================= */
@@ -335,7 +460,15 @@ export default function App() {
     en: {
       brand: "RB Group Solutions LLC",
       suite: "RB Field Pro 360",
-      menu: { home: "Home", services: "Services", systems: "Systems", pricing: "Pricing", faq: "FAQ", contact: "Contact" },
+      menu: {
+        home: "Home",
+        services: "Services",
+        systems: "Systems",
+        reviews: "Reviews",
+        pricing: "Pricing",
+        faq: "FAQ",
+        contact: "Contact",
+      },
       hero: {
         title: "Run field ops like a high-performance team.",
         subtitle: "One platform. Three focused modules. Real-time data for drivers, deliveries, and operations.",
@@ -396,7 +529,15 @@ export default function App() {
     es: {
       brand: "RB Group Solutions LLC",
       suite: "RB Field Pro 360",
-      menu: { home: "Inicio", services: "Servicios", systems: "Sistemas", pricing: "Precios", faq: "FAQ", contact: "Contacto" },
+      menu: {
+        home: "Inicio",
+        services: "Servicios",
+        systems: "Sistemas",
+        reviews: "Opiniones",
+        pricing: "Precios",
+        faq: "FAQ",
+        contact: "Contacto",
+      },
       hero: {
         title: "Opera como una empresa de alto rendimiento.",
         subtitle: "Una plataforma. Tres módulos. Datos en tiempo real para drivers, entregas y operaciones.",
@@ -460,6 +601,7 @@ export default function App() {
     { id: "home", label: t.menu.home },
     { id: "services", label: t.menu.services },
     { id: "systems", label: t.menu.systems },
+    { id: "reviews", label: t.menu.reviews },
     { id: "pricing", label: t.menu.pricing },
     { id: "faq", label: t.menu.faq },
     { id: "contact", label: t.menu.contact },
@@ -698,6 +840,9 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* Reviews / Opiniones */}
+        <ReviewsSection language={language} />
 
         {/* Precios */}
         <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
