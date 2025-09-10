@@ -111,7 +111,7 @@ const App = () => {
         title: "The Suite",
         subtitle: "A unified platform with role-based modules designed to reduce errors, automate workflows, and scale.",
         roles: [
-          { title: "Drivers", body: "RB FuelTrack 360 — OCR receipts, no-receipt audit (odometer + pump + GPS), route overview." },
+          { title: "Drivers", body: "RB FuelTrack 360 — OCR receipts, receiptless audit (odometer + pump + GPS) and route overview." },
           { title: "Deliveries", body: "RB SnapLog 360 — enterprise-grade proof of delivery with photo, GPS and reverse geocoding." },
           { title: "Operations / Warehouse / Finance", body: "RB Field360 — records, analytics & payroll; fleet and warehouse control." },
         ],
@@ -121,14 +121,14 @@ const App = () => {
         subtitle: "Mix and match what your team needs. Everything stays consistent under RB Field Pro 360.",
         snaplogTitle: "RB SnapLog 360",
         snaplogDesc:
-          "Enterprise-grade Proof of Delivery (POD). Guided capture with photo and GPS, automatic address (reverse geocoding), fraud-prevention policies, and exportable reports. Integrates with Firebase/Google Sheets.",
+          "Enterprise-grade Proof of Delivery optimized for mobile. Guided capture with photo, GPS and timestamp, automatic address from coordinates (reverse geocoding), ultra-low user interaction and automatic background sync. Offline-first, built to work without coverage.",
         fuelTitle: "RB FuelTrack 360",
         fuelDesc:
-          "Fuel and route control with automated audit. OCR for receipts, receiptless flow with odometer/pump/GPS validation, cost per unit tracking, and exception alerts. Designed for driver simplicity.",
+          "Fuel and route control with automated audit. Receipt OCR, receiptless flow with odometer/pump/GPS validation, cost-per-unit tracking, and exception alerts. Built for driver simplicity.",
         fieldTitle: "RB Field360",
         fieldDesc:
-          "All-in-one operational dashboard: daily records, productivity and payroll; inventory of kits/uniforms; fleet and maintenance; role-based permissions and analytics.",
-        view: "See details",
+          "Flagship operations hub: orchestrates real-time workflows; daily records, productivity and payroll; kits/uniforms inventory; fleet & maintenance; role-based permissions, executive dashboards and advanced analytics.",
+        view: "Open app",
       },
       pricing: {
         title: "Pricing",
@@ -182,14 +182,14 @@ const App = () => {
         subtitle: "Combina lo que necesitas. Todo consistente bajo RB Field Pro 360.",
         snaplogTitle: "RB SnapLog 360",
         snaplogDesc:
-          "Prueba de Entrega (POD) de nivel empresarial. Captura guiada con foto y GPS, dirección automática (geocodificación inversa), políticas antifraude y reportes/exportaciones. Integración con Firebase/Google Sheets.",
+          "Prueba de Entrega (POD) de nivel empresarial, optimizada para móviles. Captura guiada con foto, GPS y sello de tiempo; dirección automática desde coordenadas (geocodificación inversa), interacción mínima y sincronización automática. Enfoque offline-first para operar sin cobertura.",
         fuelTitle: "RB FuelTrack 360",
         fuelDesc:
-          "Control de combustible y ruta con auditoría automática. OCR de recibos, flujo sin recibo con validación de odómetro/bomba/GPS, costo por unidad y alertas de excepción. Diseñado para simplicidad del driver.",
+          "Control de combustible y ruta con auditoría automática. OCR de recibos, flujo sin recibo con validación de odómetro/bomba/GPS, cálculo de costo por unidad y alertas de excepción. Diseñado para la simplicidad del conductor.",
         fieldTitle: "RB Field360",
         fieldDesc:
-          "Dashboard operativo integral: registros diarios, productividad y nómina; inventario de kits/uniformes; flota y mantenimiento; permisos por rol y analítica.",
-        view: "Ver detalles",
+          "La joya de la corona: el hub operativo que orquesta flujos en tiempo real; registros diarios, productividad y nómina; inventario de kits/uniformes; gestión de flota y mantenimiento; permisos por rol, tableros ejecutivos y analítica avanzada.",
+        view: "Abrir app",
       },
       pricing: {
         title: "Precios",
@@ -219,7 +219,7 @@ const App = () => {
       },
       citiesLine: "Norridge / Chicago, Illinois, USA",
     },
-  })[language], [language]);
+  }), [language]);
 
   const NAV = [
     { id: "home", label: t.menu.home },
@@ -382,26 +382,95 @@ const App = () => {
               ))}
             </div>
 
-            {/* Detalles rápidos con enlace a la app */}
+            {/* Detalles rápidos con botón */}
             <div id="snaplog" className="mt-16 p-8 bg-white rounded-2xl border">
               <h3 className="text-2xl font-bold mb-2">RB SnapLog 360</h3>
               <p className="text-gray-600 mb-4">{t.systems.snaplogDesc}</p>
-              <a href={urls.snaplog} target="_blank" rel="noreferrer" className="text-blue-600 font-semibold hover:underline">
-                {language === "en" ? "Open app" : "Abrir app"} → {urls.snaplog}
+              <ul className="list-disc pl-6 space-y-2 text-gray-600 mb-6">
+                {(language === "en"
+                  ? [
+                      "One-tap proof: photo + GPS + timestamp.",
+                      "Automatic address from coordinates (reverse geocoding).",
+                      "Offline-first with background sync; records are never lost.",
+                      "Minimal input: operator’s name only.",
+                      "Bilingual interface (EN/ES).",
+                    ]
+                  : [
+                      "POD en un toque: foto + GPS + sello de tiempo.",
+                      "Dirección automática desde coordenadas (geocodificación inversa).",
+                      "Offline-first con sincronización en segundo plano; los registros no se pierden.",
+                      "Interacción mínima: solo nombre del operario.",
+                      "Interfaz bilingüe (ES/EN).",
+                    ]
+                ).map((txt, i) => <li key={i}>{txt}</li>)}
+              </ul>
+              <a
+                href={urls.snaplog}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:shadow-lg"
+              >
+                {language === "en" ? "Open app" : "Abrir app"}
               </a>
             </div>
+
             <div id="fueltrack" className="mt-8 p-8 bg-white rounded-2xl border">
               <h3 className="text-2xl font-bold mb-2">RB FuelTrack 360</h3>
               <p className="text-gray-600 mb-4">{t.systems.fuelDesc}</p>
-              <a href={urls.fueltrack} target="_blank" rel="noreferrer" className="text-blue-600 font-semibold hover:underline">
-                {language === "en" ? "Open app" : "Abrir app"} → {urls.fueltrack}
+              <ul className="list-disc pl-6 space-y-2 text-gray-600 mb-6">
+                {(language === "en"
+                  ? [
+                      "Receipt OCR and receiptless validation (odometer / pump / GPS).",
+                      "Cost-per-unit tracking and route overview.",
+                      "Exception alerts and audit trail.",
+                      "Driver-first UX for fast capture on the go.",
+                    ]
+                  : [
+                      "OCR de recibos y validación sin recibo (odómetro / bomba / GPS).",
+                      "Cálculo de costo por unidad y vista de ruta.",
+                      "Alertas de excepción y traza de auditoría.",
+                      "UX pensada para el conductor: captura rápida en movimiento.",
+                    ]
+                ).map((txt, i) => <li key={i}>{txt}</li>)}
+              </ul>
+              <a
+                href={urls.fueltrack}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-amber-600 text-white font-semibold hover:shadow-lg"
+              >
+                {language === "en" ? "Open app" : "Abrir app"}
               </a>
             </div>
+
             <div id="field360" className="mt-8 p-8 bg-white rounded-2xl border">
-              <h3 className="text-2xl font-bold mb-2">RB Field360</h3>
+              <h3 className="text-2xl font-bold mb-2">RB Field360 — {language === "en" ? "Flagship" : "Joya de la corona"}</h3>
               <p className="text-gray-600 mb-4">{t.systems.fieldDesc}</p>
-              <a href={urls.field360} target="_blank" rel="noreferrer" className="text-blue-600 font-semibold hover:underline">
-                {language === "en" ? "Open app" : "Abrir app"} → {urls.field360}
+              <ul className="list-disc pl-6 space-y-2 text-gray-600 mb-6">
+                {(language === "en"
+                  ? [
+                      "Daily records, productivity metrics and payroll.",
+                      "Kits/uniforms inventory and consumables control.",
+                      "Fleet management and preventive maintenance.",
+                      "Role-based permissions and auditable actions.",
+                      "Executive dashboards and advanced analytics.",
+                    ]
+                  : [
+                      "Registros diarios, métricas de productividad y nómina.",
+                      "Inventario de kits/uniformes y control de consumibles.",
+                      "Gestión de flota y mantenimiento preventivo.",
+                      "Permisos por rol y acciones auditables.",
+                      "Tableros ejecutivos y analítica avanzada.",
+                    ]
+                ).map((txt, i) => <li key={i}>{txt}</li>)}
+              </ul>
+              <a
+                href={urls.field360}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-purple-700 text-white font-semibold hover:shadow-lg"
+              >
+                {language === "en" ? "Open app" : "Abrir app"}
               </a>
             </div>
           </div>
